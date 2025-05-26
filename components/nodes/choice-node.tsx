@@ -10,17 +10,17 @@ interface ChoiceNodeData {
   description?: string
 }
 
-export default function ChoiceNode({ data }: NodeProps<ChoiceNodeData>) {
+export default function ChoiceNode({ id, data }: { id: string; data: any }) {
   return (
-    <NodeWrapper accentColor="#8b5cf6" icon={MousePointer} badge="CHOICE" className="min-w-[320px]">
+    <NodeWrapper ref={data.ref} accentColor="#8b5cf6" icon={MousePointer} badge="CHOICE" className="w-[320px] max-w-[320px] bg-gray-900/60 rounded-none border-gray-700/80 shadow-none">
       <Handle type="target" position={Position.Left} className="w-3 h-3" />
 
-      <div className="flex-1">
-        <div className="text-white text-sm font-medium mb-3">Choose from {data.choices.length} options</div>
+      <div className="flex-1 flex flex-col">
+        <div className="text-white text-sm font-medium break-words whitespace-pre-line">Choose from {data.choices.length} options</div>
 
-        <div className="space-y-2">
-          {data.choices.slice(0, 4).map((choice, index) => (
-            <div key={index} className="bg-gray-700 border border-purple-500/30 rounded px-3 py-2 text-sm text-white">
+        <div>
+          {data.choices.slice(0, 4).map((choice: any, index: number) => (
+            <div key={index} className="bg-gray-700 border border-purple-500/30 rounded px-3 py-2 text-sm text-white break-words whitespace-pre-line">
               {choice}
             </div>
           ))}
@@ -30,7 +30,7 @@ export default function ChoiceNode({ data }: NodeProps<ChoiceNodeData>) {
           )}
         </div>
 
-        {data.description && <div className="text-gray-400 text-xs mt-2">{data.description}</div>}
+        {data.description && <div className="text-gray-400 text-xs">{data.description}</div>}
       </div>
 
       <Handle type="source" position={Position.Right} className="w-3 h-3" />

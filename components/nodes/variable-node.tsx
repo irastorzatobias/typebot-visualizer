@@ -11,19 +11,19 @@ interface VariableNodeData {
   description?: string
 }
 
-export default function VariableNode({ data }: NodeProps<VariableNodeData>) {
+export default function VariableNode({ id, data }: { id: string; data: any }) {
   return (
-    <NodeWrapper accentColor="#6366f1" icon={Database} badge="VARIABLE" className="min-w-[280px]">
+    <NodeWrapper ref={data.ref} accentColor="#6366f1" icon={Database} badge="VARIABLE" className="w-[320px] max-w-[320px] bg-gray-900/60 rounded-none border-gray-700/80 shadow-none">
       <Handle type="target" position={Position.Left} className="w-3 h-3" />
 
-      <div className="flex-1 min-w-0">
-        <div className="text-white text-sm font-medium mb-1">Set {data.variableId}</div>
+      <div className="flex-1 min-w-0 flex flex-col">
+        <div className="text-white text-sm font-medium break-words whitespace-pre-line">Set {data.variableId}</div>
 
-        <div className="text-gray-400 text-xs break-words">
+        <div className="text-gray-400 text-xs break-words whitespace-pre-line">
           {data.expression.length > 60 ? `${data.expression.substring(0, 57)}...` : data.expression}
         </div>
 
-        {data.description && <div className="text-gray-400 text-xs mt-1">{data.description}</div>}
+        {data.description && <div className="text-gray-400 text-xs">{data.description}</div>}
       </div>
 
       <Handle type="source" position={Position.Right} className="w-3 h-3" />

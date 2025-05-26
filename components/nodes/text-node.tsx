@@ -11,7 +11,7 @@ interface TextNodeData {
   description?: string
 }
 
-export default function TextNode({ id, data }: NodeProps<TextNodeData>) {
+export default function TextNode({ id, data }: { id: string; data: any }) {
   const [isEditing, setIsEditing] = useState(false)
   const [editText, setEditText] = useState(data.content)
 
@@ -32,11 +32,11 @@ export default function TextNode({ id, data }: NodeProps<TextNodeData>) {
 
   return (
     <>
-      <NodeWrapper accentColor="#3b82f6" icon={MessageSquare} badge="TEXT" className="min-w-[300px]">
+      <NodeWrapper ref={data.ref} accentColor="#3b82f6" icon={MessageSquare} badge="TEXT" className="w-[320px] max-w-[320px] bg-gray-900/60 rounded-none border-gray-700/80 shadow-none">
         <Handle type="target" position={Position.Left} className="w-3 h-3" />
 
-        <div className="flex-1 min-w-0">
-          <div className="text-white text-sm leading-relaxed break-words mb-2">{data.content}</div>
+        <div className="flex-1 min-w-0 flex flex-col">
+          <div className="text-white text-sm leading-relaxed break-words whitespace-pre-line">{data.content}</div>
           {data.description && <div className="text-gray-400 text-xs">{data.description}</div>}
         </div>
 

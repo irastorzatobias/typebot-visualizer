@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useRef, useLayoutEffect } from "react"
 import {
   ReactFlow,
   Background,
@@ -32,12 +32,65 @@ export default function FlowVisualizer({ data }: FlowVisualizerProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
 
+  // --- Absolute stacking logic ---
+  const blockRefs = useRef<{ [id: string]: HTMLDivElement | null }>({})
+
+  useLayoutEffect(() => {
+    // Agrupa nodos por grupo
+    const groupBlocks: { [groupId: string]: Node[] } = {}
+    nodes.forEach((node) => {
+      if (node.type !== "groupNode") {
+        // Encuentra el grupo al que pertenece por posición X/Y
+        const group = nodes.find(
+          (g) => g.type === "groupNode" && Math.abs(node.position.x - (g.position.x + 20)) < 5
+        )
+        if (group) {
+          if (!groupBlocks[group.id]) groupBlocks[group.id] = []
+          groupBlocks[group.id].push(node)
+        }
+      }
+    })
+    // Para cada grupo, calcula posiciones Y acumuladas
+    const newNodes = nodes.map((node) => {
+      if (node.type === "groupNode") return node
+      // Encuentra el grupo
+      const group = nodes.find(
+        (g) => g.type === "groupNode" && Math.abs(node.position.x - (g.position.x + 20)) < 5
+      )
+      if (!group) return node
+      const siblings = groupBlocks[group.id] || []
+      // Ordena por Y original
+      siblings.sort((a, b) => a.position.y - b.position.y)
+      let y = group.position.y + 60
+      for (const sib of siblings) {
+        if (sib.id === node.id) break
+        const ref = blockRefs.current[sib.id]
+        y += ref?.getBoundingClientRect().height || 80
+      }
+      return { ...node, position: { ...node.position, y } }
+    })
+    setNodes(newNodes)
+    // eslint-disable-next-line
+  }, [])
+
   const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges])
 
   return (
     <div className="w-full h-full bg-gray-950">
       <ReactFlow
-        nodes={nodes}
+        nodes={nodes.map((node) =>
+          node.type !== "groupNode"
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  ref: (el: HTMLDivElement | null) => {
+                    blockRefs.current[node.id] = el
+                  },
+                },
+              }
+            : node
+        )}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
