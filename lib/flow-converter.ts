@@ -43,7 +43,7 @@ export function convertTypebotToFlow(data: TypebotData): { nodes: Node[]; edges:
 
     // Add blocks within groups with proper spacing - NO PARENT RELATIONSHIP
     group.blocks.forEach((block, index) => {
-      const blockData = convertBlockToNodeData(block)
+      const blockData = convertBlockToNodeData(block, data.typebot.groups)
 
       nodes.push({
         id: block.id,
@@ -129,7 +129,7 @@ export function convertTypebotToFlow(data: TypebotData): { nodes: Node[]; edges:
   return { nodes, edges }
 }
 
-function convertBlockToNodeData(block: any) {
+function convertBlockToNodeData(block: any, allGroups?: any[]): any {
   switch (block.type) {
     case "text":
       return {
@@ -177,16 +177,33 @@ function convertBlockToNodeData(block: any) {
         },
       }
 
-    case "Jump":
+    case "Jump": {
+      let targetGroupTitle = undefined
+      let targetBlockLabel = undefined
+      if (block.options?.groupId && allGroups) {
+        const group = allGroups.find((g: any) => g.id === block.options.groupId)
+        if (group) {
+          targetGroupTitle = group.title
+          if (block.options?.blockId) {
+            const targetBlock = group.blocks.find((b: any) => b.id === block.options.blockId)
+            if (targetBlock) {
+              targetBlockLabel = targetBlock.type === "text" ? extractTextContent(targetBlock.content) : targetBlock.type
+            }
+          }
+        }
+      }
       return {
         type: "jumpNode",
         data: {
           label: "Jump",
           targetGroup: block.options?.groupId,
           targetBlock: block.options?.blockId,
+          targetGroupTitle,
+          targetBlockLabel,
           description: "Flow control",
         },
       }
+    }
 
     case "dify-ai":
       return {

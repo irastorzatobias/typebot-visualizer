@@ -10,6 +10,8 @@ interface JumpNodeData {
   targetBlock?: string
   description?: string
   ref?: React.RefObject<HTMLDivElement>
+  targetGroupTitle?: string
+  targetBlockLabel?: string
 }
 
 export default function JumpNode({ id, data }: { id: string; data: JumpNodeData }) {
@@ -18,14 +20,12 @@ export default function JumpNode({ id, data }: { id: string; data: JumpNodeData 
       <Handle type="target" position={Position.Left} className="w-3 h-3" />
 
       <div className="flex-1 flex flex-col">
-        <div className="text-white text-sm font-medium break-words whitespace-pre-line">Jump to Group</div>
-
-        <div className="text-gray-400 text-xs break-words whitespace-pre-line">
-          → {data.targetGroup || "No target"}
-          {data.targetBlock && ` (${data.targetBlock})`}
+        <div className="text-white text-sm font-medium break-words whitespace-pre-line">
+          Jump to
         </div>
-
-        {data.description && <div className="text-gray-400 text-xs">{data.description}</div>}
+        <h1 className="text-white text-sm font-bold break-words whitespace-pre-line">
+          {data.targetGroupTitle || data.targetGroup || "No target"}
+        </h1>
       </div>
 
       <Handle type="source" position={Position.Right} className="w-3 h-3" />
