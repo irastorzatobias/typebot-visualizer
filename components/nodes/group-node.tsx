@@ -7,10 +7,10 @@ interface GroupNodeData {
   blockCount: number
 }
 
-export default function GroupNode({ data }: NodeProps<GroupNodeData>) {
+export default function GroupNode({ id, data }: { id: string; data: any }) {
   return (
-    <div className="bg-gray-900/60 border border-gray-600 rounded-xl backdrop-blur-sm p-4 min-w-[350px]">
-      <div className="text-white font-medium text-sm mb-1">{data.label}</div>
+    <div className="absolute left-5 z-10 px-2">
+      <div className="text-white font-bold text-base leading-tight drop-shadow-sm">{data.label}</div>
       <div className="text-gray-400 text-xs">{data.blockCount} blocks</div>
     </div>
   )
