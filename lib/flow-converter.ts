@@ -75,8 +75,22 @@ export function convertTypebotToFlow(data: TypebotData): { nodes: Node[]; edges:
 
   // Convert edges with proper source/target resolution and validation
   data.typebot.edges.forEach((edge) => {
-    const sourceId = edge.from.eventId || edge.from.blockId
+    let sourceId = edge.from.eventId || edge.from.blockId
+    let sourceHandle: string | undefined = undefined
     let targetId = edge.to.blockId
+
+    // If the edge comes from a choice input item, set the handle id
+    if (edge.from.blockId && edge.from.itemId) {
+      // Find the group and block
+      const group = data.typebot.groups.find((g) => g.blocks.some((b) => b.id === edge.from.blockId))
+      const block = group?.blocks.find((b) => b.id === edge.from.blockId)
+      if (block && block.items) {
+        const idx = block.items.findIndex((item: any) => item.id === edge.from.itemId)
+        if (idx !== -1) {
+          sourceHandle = `choice-${idx}`
+        }
+      }
+    }
 
     // If target is a group, connect to the first block in that group
     if (edge.to.groupId && !targetId) {
@@ -88,6 +102,7 @@ export function convertTypebotToFlow(data: TypebotData): { nodes: Node[]; edges:
       edges.push({
         id: edge.id,
         source: sourceId,
+        sourceHandle,
         target: targetId,
         type: "default",
         animated: false,
