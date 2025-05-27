@@ -41,6 +41,9 @@ export function convertTypebotToFlow(data: TypebotData): { nodes: Node[]; edges:
       draggable: false,
     })
 
+    // Extract variables once for this group
+    const variables = Array.isArray(data.typebot.variables) ? data.typebot.variables : [];
+
     // Add blocks within groups with proper spacing - NO PARENT RELATIONSHIP
     group.blocks.forEach((block, index) => {
       const blockData = convertBlockToNodeData(block, data.typebot.groups)
@@ -52,7 +55,10 @@ export function convertTypebotToFlow(data: TypebotData): { nodes: Node[]; edges:
           x: group.graphCoordinates.x + 20,
           y: group.graphCoordinates.y + 60 + index * 140,
         },
-        data: blockData.data,
+        data: {
+          ...blockData.data,
+          variables,
+        },
         draggable: false,
         // Remove parentNode to fix edge rendering
       })
@@ -79,16 +85,29 @@ export function convertTypebotToFlow(data: TypebotData): { nodes: Node[]; edges:
     let sourceHandle: string | undefined = undefined
     let targetId = edge.to.blockId
 
-    // If the edge comes from a choice input item, set the handle id
+    // If the edge comes from a condition block item, set the handle id
     if (edge.from.blockId && edge.from.itemId) {
       // Find the group and block
       const group = data.typebot.groups.find((g) => g.blocks.some((b) => b.id === edge.from.blockId))
       const block = group?.blocks.find((b) => b.id === edge.from.blockId)
-      if (block && block.items) {
+      if (block && block.type === "Condition" && block.items) {
+        // Use the item's id for the handle
+        sourceHandle = `condition-${edge.from.itemId}`
+      }
+      // (Optional: keep choice input logic if you have both types in your data)
+      else if (block && block.type === "choice input" && block.items) {
         const idx = block.items.findIndex((item: any) => item.id === edge.from.itemId)
         if (idx !== -1) {
           sourceHandle = `choice-${idx}`
         }
+      }
+    }
+    // If the edge comes from a Condition block and has no itemId, it's the Else branch
+    else if (edge.from.blockId) {
+      const group = data.typebot.groups.find((g) => g.blocks.some((b) => b.id === edge.from.blockId))
+      const block = group?.blocks.find((b) => b.id === edge.from.blockId)
+      if (block && block.type === "Condition") {
+        sourceHandle = "condition-else"
       }
     }
 
@@ -121,10 +140,6 @@ export function convertTypebotToFlow(data: TypebotData): { nodes: Node[]; edges:
       console.warn(`Skipping edge ${edge.id}: source=${sourceId}, target=${targetId}`)
     }
   })
-
-  console.log("Generated nodes:", nodes.length)
-  console.log("Generated edges:", edges.length)
-  console.log("Edges:", edges)
 
   return { nodes, edges }
 }
@@ -213,6 +228,15 @@ function convertBlockToNodeData(block: any, allGroups?: any[]): any {
           action: block.options?.action || "AI Action",
           query: block.options?.query || "No query",
           description: "AI processing",
+        },
+      }
+
+    case "Condition":
+      return {
+        type: "conditionNode",
+        data: {
+          label: "Condition",
+          items: block.items,
         },
       }
 

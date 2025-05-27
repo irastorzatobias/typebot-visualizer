@@ -6,6 +6,7 @@ import GroupNode from "./group-node"
 import VariableNode from "./variable-node"
 import JumpNode from "./jump-node"
 import AINode from "./ai-node"
+import ConditionNode from "./condition-node"
 
 export const nodeTypes = {
   textNode: TextNode,
@@ -16,4 +17,5 @@ export const nodeTypes = {
   variableNode: VariableNode,
   jumpNode: JumpNode,
   aiNode: AINode,
+  conditionNode: ConditionNode,
 }
